@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Lens Image Search - Upload</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            background: #2d3748;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        .btn {
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="card p-8 max-w-md w-full mx-4">
+        <h1 class="text-3xl font-bold text-white text-center mb-6">Google Lens Image Search</h1>
+        <div class="space-y-4">
+            <input type="file" id="fileUploadBtn" accept="image/*" class="hidden">
+            <label for="fileUploadBtn" class="btn block w-full bg-indigo-600 text-white text-center py-3 rounded-lg cursor-pointer hover:bg-indigo-700">
+                Upload Image
+            </label>
+            <button id="cameraBtn" class="btn block w-full bg-teal-600 text-white text-center py-3 rounded-lg hover:bg-teal-700">
+                Take Photo
+            </button>
+            <p id="errorMsg" class="text-red-500 text-center hidden"></p>
+        </div>
+        <video id="video" class="hidden mt-4 w-full rounded-lg" autoplay></video>
+        <canvas id="canvas" class="hidden"></canvas>
+        <button id="captureBtn" class="btn hidden w-full bg-green-600 text-white text-center py-3 rounded-lg mt-4 hover:bg-green-700">
+            Capture
+        </button>
+    </div>
+
+    <script>
+        const fileUploadBtn = document.querySelector('#fileUploadBtn');
+        const cameraBtn = document.querySelector('#cameraBtn');
+        const captureBtn = document.querySelector('#captureBtn');
+        const video = document.querySelector('#video');
+        const canvas = document.querySelector('#canvas');
+        const errorMsg = document.querySelector('#errorMsg');
+
+        fileUploadBtn.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) {
+                showError('No file selected.');
+                return;
+            }
+            await uploadImage(file);
+        });
+
+        cameraBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.classList.remove('hidden');
+                captureBtn.classList.remove('hidden');
+                video.srcObject = stream;
+            } catch (err) {
+                showError('Camera access denied or unavailable.');
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+                await uploadImage(file);
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.classList.add('hidden');
+                captureBtn.classList.add('hidden');
+            }, 'image/jpeg');
+        });
+
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            try {
+                const res = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+                const data = await res.json();
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    localStorage.setItem('searchResults', JSON.stringify(data.visual_matches || []));
+                    window.location.href = 'results.html';
+                }
+            } catch (err) {
+                showError(`Error: ${err.message}`);
+            }
+        }
+
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.classList.remove('hidden');
+            setTimeout(() => errorMsg.classList.add('hidden'), 5000);
+        }
+    </script>
+</body>
+</html>
