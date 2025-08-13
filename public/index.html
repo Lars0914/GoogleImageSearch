@@ -30,9 +30,44 @@
         .btn:hover {
             transform: scale(1.05);
         }
+        /* Loading Spinner Overlay */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .spinner {
+            width: 64px;
+            height: 64px;
+            border: 6px solid transparent;
+            border-top-color: #4f46e5; /* Indigo */
+            border-right-color: #14b8a6; /* Teal */
+            border-radius: 50%;
+            animation: spin 1s linear infinite, pulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5), 0 0 30px rgba(20, 184, 166, 0.3);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
     </style>
 </head>
 <body>
+    <div class="spinner-overlay" id="spinnerOverlay">
+        <div class="spinner"></div>
+    </div>
     <div class="card p-8 max-w-md w-full mx-4">
         <h1 class="text-3xl font-bold text-white text-center mb-6">Google Lens Image Search</h1>
         <div class="space-y-4">
@@ -59,6 +94,7 @@
         const video = document.querySelector('#video');
         const canvas = document.querySelector('#canvas');
         const errorMsg = document.querySelector('#errorMsg');
+        const spinnerOverlay = document.querySelector('#spinnerOverlay');
 
         fileUploadBtn.addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -94,6 +130,7 @@
         });
 
         async function uploadImage(file) {
+            spinnerOverlay.style.display = 'flex'; // Show spinner
             const formData = new FormData();
             formData.append('image', file);
             try {
@@ -101,6 +138,7 @@
                     method: 'POST',
                     body: formData
                 });
+                spinnerOverlay.style.display = 'none'; // Hide spinner
                 if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
                 const data = await res.json();
                 if (data.error) {
@@ -110,6 +148,7 @@
                     window.location.href = '/results.html';
                 }
             } catch (err) {
+                spinnerOverlay.style.display = 'none'; // Hide spinner on error
                 showError(`Error: ${err.message}`);
             }
         }
