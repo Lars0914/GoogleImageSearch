@@ -97,7 +97,7 @@
             const formData = new FormData();
             formData.append('image', file);
             try {
-                const res = await fetch('/upload', {
+                const res = await fetch('/api/upload', {
                     method: 'POST',
                     body: formData
                 });
@@ -107,7 +107,7 @@
                     showError(data.error);
                 } else {
                     localStorage.setItem('searchResults', JSON.stringify(data.visual_matches || []));
-                    window.location.href = 'results.html';
+                    window.location.href = '/results.html';
                 }
             } catch (err) {
                 showError(`Error: ${err.message}`);
