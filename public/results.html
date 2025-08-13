@@ -19,7 +19,7 @@
             padding: 2rem;
         }
         .card {
-            background: #2d3748;
+            background: rgba(45, 55, 72, 0.9); /* Semi-transparent for readability */
             border-radius: 1rem;
             overflow: hidden;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
@@ -46,15 +46,61 @@
         .card-content a:hover {
             color: #5a67d8;
         }
-        .back-btn {
+        .back-btn, .quick-view-btn {
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
-        .back-btn:hover {
+        .back-btn:hover, .quick-view-btn:hover {
             transform: scale(1.05);
+        }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: #2d3748;
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 90%;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            animation: modalFadeIn 0.3s ease-in-out;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #e2e8f0;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .stars {
+            color: #f59e0b;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
     <div class="max-w-7xl mx-auto py-6">
         <button onclick="window.location.href='/index.html'" class="back-btn bg-indigo-600 text-white px-6 py-3 rounded-lg m-4 hover:bg-indigo-700">
             Back to Upload
@@ -70,18 +116,127 @@
 
         const resultBox = document.querySelector('#resultBox');
         const noResults = document.querySelector('#noResults');
+        const modalOverlay = document.querySelector('#modalOverlay');
+        const modalBody = document.querySelector('#modalBody');
         const results = JSON.parse(localStorage.getItem('searchResults') || '[]');
+
+        // Simulated product data generator
+        function generateProductData(title) {
+            const categories = {
+                clothing: ['shirt', 'jacket', 'pants', 'dress', 'shoes'],
+                electronics: ['phone', 'laptop', 'tablet', 'camera', 'headphones'],
+                home: ['chair', 'table', 'lamp', 'sofa', 'bed'],
+                accessories: ['watch', 'bag', 'sunglasses', 'wallet', 'belt']
+            };
+
+            let category = 'other';
+            title = title.toLowerCase();
+            for (const [cat, keywords] of Object.entries(categories)) {
+                if (keywords.some(keyword => title.includes(keyword))) {
+                    category = cat;
+                    break;
+                }
+            }
+
+            const priceRanges = {
+                clothing: [20, 100],
+                electronics: [100, 1000],
+                home: [50, 500],
+                accessories: [30, 150],
+                other: [10, 200]
+            };
+            const [minPrice, maxPrice] = priceRanges[category];
+            const price = (Math.random() * (maxPrice - minPrice) + minPrice).toFixed(2);
+            const discount = Math.random() < 0.3 ? (Math.random() * 0.2 + 0.1).toFixed(2) : 0;
+            const finalPrice = discount ? (price * (1 - discount)).toFixed(2) : price;
+
+            const rating = (4 + Math.random()).toFixed(1);
+            const reviewCount = Math.floor(Math.random() * 451 + 50);
+            const stockStatus = Math.random() < 0.8 ? 'In Stock' : Math.random() < 0.95 ? 'Low Stock' : 'Out of Stock';
+
+            const descriptions = {
+                clothing: `Premium ${title} crafted with high-quality materials for comfort and style.`,
+                electronics: `Cutting-edge ${title} with advanced features and sleek design.`,
+                home: `Elegant ${title} designed to enhance your living space.`,
+                accessories: `Stylish ${title} perfect for any occasion.`,
+                other: `Versatile ${title} built for durability and performance.`
+            };
+            const description = descriptions[category];
+
+            const specs = {
+                clothing: ['Material: Cotton Blend', 'Sizes: S-XXL', 'Care: Machine Washable'],
+                electronics: ['Processor: Octa-Core', 'Battery: 4000mAh', 'Warranty: 1 Year'],
+                home: ['Material: Solid Wood', 'Dimensions: 120x60x80cm', 'Assembly: Required'],
+                accessories: ['Material: Genuine Leather', 'Color: Multiple Options', 'Warranty: 6 Months'],
+                other: ['Weight: 1-5kg', 'Durability: High', 'Use: Multi-purpose']
+            };
+
+            const reviews = [
+                `Great ${title}! Exceeded my expectations.`,
+                `Love the design and quality of this ${title}.`,
+                `Very reliable ${title}, worth every penny.`
+            ].slice(0, Math.floor(Math.random() * 3 + 1));
+
+            return {
+                name: `${title.split(' ').slice(0, 3).join(' ')} ${category !== 'other' ? category.charAt(0).toUpperCase() + category.slice(1) : ''}`.trim(),
+                price: `$${finalPrice}`,
+                originalPrice: discount ? `$${price}` : null,
+                discount: discount ? `${(discount * 100).toFixed(0)}% Off` : null,
+                rating,
+                reviewCount,
+                stockStatus,
+                description,
+                specs: specs[category],
+                reviews
+            };
+        }
+
+        function openModal(productData, thumbnail, link) {
+            modalBody.innerHTML = `
+                <img src="${thumbnail}" alt="${productData.name}" class="w-full h-64 object-cover rounded-lg mb-4">
+                <h2 class="text-2xl font-bold text-white mb-2">${productData.name}</h2>
+                <p class="text-gray-300 mb-2">${productData.description}</p>
+                <div class="flex items-center mb-2">
+                    <span class="stars text-lg">★${'★'.repeat(Math.floor(productData.rating))}${'☆'.repeat(5 - Math.floor(productData.rating))}</span>
+                    <span class="text-gray-400 ml-2">(${productData.reviewCount} reviews)</span>
+                </div>
+                <p class="text-xl font-semibold text-white mb-2">${productData.price} ${productData.discount ? `<span class="line-through text-gray-500">${productData.originalPrice}</span> <span class="text-green-400">${productData.discount}</span>` : ''}</p>
+                <p class="text-gray-300 mb-2">Stock: <span class="${productData.stockStatus === 'In Stock' ? 'text-green-400' : productData.stockStatus === 'Low Stock' ? 'text-yellow-400' : 'text-red-400'}">${productData.stockStatus}</span></p>
+                <h3 class="text-lg font-semibold text-white mb-1">Specifications</h3>
+                <ul class="list-disc list-inside text-gray-300 mb-2">
+                    ${productData.specs.map(spec => `<li>${spec}</li>`).join('')}
+                </ul>
+                <h3 class="text-lg font-semibold text-white mb-1">Customer Reviews</h3>
+                <ul class="list-disc list-inside text-gray-300 mb-4">
+                    ${productData.reviews.map(review => `<li>${review}</li>`).join('')}
+                </ul>
+                <div class="flex space-x-4">
+                    <a href="${link}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">View Source</a>
+                    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">Add to Cart</button>
+                </div>
+            `;
+            modalOverlay.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+        }
 
         if (results.length > 0) {
             results.forEach((element, index) => {
+                const productData = generateProductData(element.title);
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.setAttribute('data-aos', index % 2 === 0 ? 'fade-up' : 'zoom-in');
                 card.setAttribute('data-aos-delay', `${index * 100}`);
                 card.innerHTML = `
-                    <img src="${element.thumbnail}" alt="${element.title}">
+                    <img src="${element.thumbnail}" alt="${productData.name}">
                     <div class="card-content">
-                        <a href="${element.link}" target="_blank">${element.title}</a>
+                        <a href="${element.link}" target="_blank">${productData.name}</a>
+                        <p class="text-white font-semibold">${productData.price} ${productData.discount ? `<span class="line-through text-gray-500">${productData.originalPrice}</span>` : ''}</p>
+                        <p class="stars">★${'★'.repeat(Math.floor(productData.rating))}${'☆'.repeat(5 - Math.floor(productData.rating))}</p>
+                        <p class="text-gray-400">${productData.stockStatus}</p>
+                        <button class="quick-view-btn bg-teal-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-teal-700" onclick='openModal(${JSON.stringify(productData)}, "${element.thumbnail}", "${element.link}")'>Quick View</button>
                     </div>
                 `;
                 resultBox.appendChild(card);
