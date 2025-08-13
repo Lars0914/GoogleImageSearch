@@ -13,18 +13,17 @@
             font-family: 'Inter', sans-serif;
         }
         .grid-container {
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
             padding: 2rem;
         }
         .card {
-            background: rgba(45, 55, 72, 0.9);
+            background: rgba(45, 55, 72, 0.9); /* Semi-transparent for readability */
             border-radius: 1rem;
             overflow: hidden;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            max-width: 400px;
-            width: 100%;
         }
         .card:hover {
             transform: translateY(-5px);
@@ -32,11 +31,11 @@
         }
         .card img {
             width: 100%;
-            height: 300px;
+            height: 200px;
             object-fit: cover;
         }
         .card-content {
-            padding: 1.5rem;
+            padding: 1rem;
         }
         .card-content a {
             color: #e2e8f0;
@@ -86,6 +85,9 @@
             font-size: 1.5rem;
             cursor: pointer;
         }
+        .stars {
+            color: #f59e0b;
+        }
         @keyframes modalFadeIn {
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
@@ -103,7 +105,7 @@
         <button onclick="window.location.href='/index.html'" class="back-btn bg-indigo-600 text-white px-6 py-3 rounded-lg m-4 hover:bg-indigo-700">
             Back to Upload
         </button>
-        <h1 class="text-3xl font-bold text-white text-center mb-6">Search Result</h1>
+        <h1 class="text-3xl font-bold text-white text-center mb-6">Search Results</h1>
         <div id="resultBox" class="grid-container"></div>
         <p id="noResults" class="text-white text-center hidden">No results found.</p>
     </div>
@@ -120,60 +122,72 @@
 
         // Simulated product data generator
         function generateProductData(title) {
-            const brands = {
-                luxury: ['Gucci', 'Prada', 'Louis Vuitton', 'Chanel', 'Hermes', 'Dior'],
-                midrange: ['Coach', 'Michael Kors', 'Kate Spade', 'Tory Burch'],
-                generic: ['Generic']
+            const categories = {
+                clothing: ['shirt', 'jacket', 'pants', 'dress', 'shoes'],
+                electronics: ['phone', 'laptop', 'tablet', 'camera', 'headphones'],
+                home: ['chair', 'table', 'lamp', 'sofa', 'bed'],
+                accessories: ['watch', 'bag', 'sunglasses', 'wallet', 'belt']
             };
 
-            let brand = 'Generic';
+            let category = 'other';
             title = title.toLowerCase();
-            for (const luxuryBrand of brands.luxury) {
-                if (title.includes(luxuryBrand.toLowerCase())) {
-                    brand = luxuryBrand;
+            for (const [cat, keywords] of Object.entries(categories)) {
+                if (keywords.some(keyword => title.includes(keyword))) {
+                    category = cat;
                     break;
                 }
             }
-            if (brand === 'Generic') {
-                for (const midrangeBrand of brands.midrange) {
-                    if (title.includes(midrangeBrand.toLowerCase())) {
-                        brand = midrangeBrand;
-                        break;
-                    }
-                }
-            }
 
-            const isHandbag = ['handbag', 'purse', 'bag', 'tote', 'clutch'].some(keyword => title.includes(keyword));
-            const productType = isHandbag ? 'Handbag' : 'Product';
-
-            const brandPriceRanges = {
-                'Gucci': [500, 5000],
-                'Prada': [600, 4500],
-                'Louis Vuitton': [700, 6000],
-                'Chanel': [1000, 8000],
-                'Hermes': [1500, 10000],
-                'Dior': [800, 5500],
-                'Coach': [150, 600],
-                'Michael Kors': [100, 500],
-                'Kate Spade': [120, 450],
-                'Tory Burch': [200, 700],
-                'Generic': [50, 300]
+            const priceRanges = {
+                clothing: [20, 100],
+                electronics: [100, 1000],
+                home: [50, 500],
+                accessories: [30, 150],
+                other: [10, 200]
             };
-            const [minPrice, maxPrice] = brandPriceRanges[brand] || brandPriceRanges['Generic'];
-            const priceLow = minPrice.toLocaleString('en-US');
-            const priceHigh = maxPrice.toLocaleString('en-US');
+            const [minPrice, maxPrice] = priceRanges[category];
+            const price = (Math.random() * (maxPrice - minPrice) + minPrice).toFixed(2);
+            const discount = Math.random() < 0.3 ? (Math.random() * 0.2 + 0.1).toFixed(2) : 0;
+            const finalPrice = discount ? (price * (1 - discount)).toFixed(2) : price;
 
-            const name = title.split(' ').slice(0, 3).join(' ').replace(brand, '').trim() || `${brand} ${productType}`;
-            const hardwareMaterial = isHandbag ? 'Leather, Metal' : 'Varies';
-            const size = isHandbag ? '30x20x10cm' : 'Varies';
+            const rating = (4 + Math.random()).toFixed(1);
+            const reviewCount = Math.floor(Math.random() * 451 + 50);
+            const stockStatus = Math.random() < 0.8 ? 'In Stock' : Math.random() < 0.95 ? 'Low Stock' : 'Out of Stock';
+
+            const descriptions = {
+                clothing: `Premium ${title} crafted with high-quality materials for comfort and style.`,
+                electronics: `Cutting-edge ${title} with advanced features and sleek design.`,
+                home: `Elegant ${title} designed to enhance your living space.`,
+                accessories: `Stylish ${title} perfect for any occasion.`,
+                other: `Versatile ${title} built for durability and performance.`
+            };
+            const description = descriptions[category];
+
+            const specs = {
+                clothing: ['Material: Cotton Blend', 'Sizes: S-XXL', 'Care: Machine Washable'],
+                electronics: ['Processor: Octa-Core', 'Battery: 4000mAh', 'Warranty: 1 Year'],
+                home: ['Material: Solid Wood', 'Dimensions: 120x60x80cm', 'Assembly: Required'],
+                accessories: ['Material: Genuine Leather', 'Color: Multiple Options', 'Warranty: 6 Months'],
+                other: ['Weight: 1-5kg', 'Durability: High', 'Use: Multi-purpose']
+            };
+
+            const reviews = [
+                `Great ${title}! Exceeded my expectations.`,
+                `Love the design and quality of this ${title}.`,
+                `Very reliable ${title}, worth every penny.`
+            ].slice(0, Math.floor(Math.random() * 3 + 1));
 
             return {
-                brand,
-                name,
-                hardwareMaterial,
-                productType,
-                size,
-                estimatedValue: `US$${priceLow} - US$${priceHigh}`
+                name: `${title.split(' ').slice(0, 3).join(' ')} ${category !== 'other' ? category.charAt(0).toUpperCase() + category.slice(1) : ''}`.trim(),
+                price: `$${finalPrice}`,
+                originalPrice: discount ? `$${price}` : null,
+                discount: discount ? `${(discount * 100).toFixed(0)}% Off` : null,
+                rating,
+                reviewCount,
+                stockStatus,
+                description,
+                specs: specs[category],
+                reviews
             };
         }
 
@@ -181,11 +195,21 @@
             modalBody.innerHTML = `
                 <img src="${thumbnail}" alt="${productData.name}" class="w-full h-64 object-cover rounded-lg mb-4">
                 <h2 class="text-2xl font-bold text-white mb-2">${productData.name}</h2>
-                <p class="text-gray-300 mb-2"><strong>Brand:</strong> ${productData.brand}</p>
-                <p class="text-gray-300 mb-2"><strong>Product Type:</strong> ${productData.productType}</p>
-                <p class="text-gray-300 mb-2"><strong>Hardware Material:</strong> ${productData.hardwareMaterial}</p>
-                <p class="text-gray-300 mb-2"><strong>Size:</strong> ${productData.size}</p>
-                <p class="text-xl font-semibold text-white mb-4"><strong>Estimated Value:</strong> ${productData.estimatedValue}</p>
+                <p class="text-gray-300 mb-2">${productData.description}</p>
+                <div class="flex items-center mb-2">
+                    <span class="stars text-lg">★${'★'.repeat(Math.floor(productData.rating))}${'☆'.repeat(5 - Math.floor(productData.rating))}</span>
+                    <span class="text-gray-400 ml-2">(${productData.reviewCount} reviews)</span>
+                </div>
+                <p class="text-xl font-semibold text-white mb-2">${productData.price} ${productData.discount ? `<span class="line-through text-gray-500">${productData.originalPrice}</span> <span class="text-green-400">${productData.discount}</span>` : ''}</p>
+                <p class="text-gray-300 mb-2">Stock: <span class="${productData.stockStatus === 'In Stock' ? 'text-green-400' : productData.stockStatus === 'Low Stock' ? 'text-yellow-400' : 'text-red-400'}">${productData.stockStatus}</span></p>
+                <h3 class="text-lg font-semibold text-white mb-1">Specifications</h3>
+                <ul class="list-disc list-inside text-gray-300 mb-2">
+                    ${productData.specs.map(spec => `<li>${spec}</li>`).join('')}
+                </ul>
+                <h3 class="text-lg font-semibold text-white mb-1">Customer Reviews</h3>
+                <ul class="list-disc list-inside text-gray-300 mb-4">
+                    ${productData.reviews.map(review => `<li>${review}</li>`).join('')}
+                </ul>
                 <div class="flex space-x-4">
                     <a href="${link}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">View Source</a>
                 </div>
@@ -198,26 +222,24 @@
         }
 
         if (results.length > 0) {
-            const element = results[0]; // Show only the first result
-            console.log(element.title);
-            
-            const productData = generateProductData(element.title);
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.setAttribute('data-aos', 'fade-up');
-            card.innerHTML = `
-                <img src="${element.thumbnail}" alt="${productData.name}">
-                <div class="card-content">
-                    <p class="text-gray-300"><strong>Brand:</strong> ${productData.brand}</p>
-                    <p class="text-gray-300"><strong>Name:</strong> ${productData.name}</p>
-                    <p class="text-gray-300"><strong>Hardware Material:</strong> ${productData.hardwareMaterial}</p>
-                    <p class="text-gray-300"><strong>Product Type:</strong> ${productData.productType}</p>
-                    <p class="text-gray-300"><strong>Size:</strong> ${productData.size}</p>
-                    <p class="text-white font-semibold"><strong>Estimated Value:</strong> ${productData.estimatedValue} <span class="text-gray-400 text-sm">(without considering condition)</span></p>
-                    <button class="quick-view-btn bg-teal-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-teal-700" onclick='openModal(${JSON.stringify(productData)}, "${element.thumbnail}", "${element.link}")'>Quick View</button>
-                </div>
-            `;
-            resultBox.appendChild(card);
+            results.forEach((element, index) => {
+                const productData = generateProductData(element.title);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.setAttribute('data-aos', index % 2 === 0 ? 'fade-up' : 'zoom-in');
+                card.setAttribute('data-aos-delay', `${index * 100}`);
+                card.innerHTML = `
+                    <img src="${element.thumbnail}" alt="${productData.name}">
+                    <div class="card-content">
+                        <a href="${element.link}" target="_blank">${productData.name}</a>
+                        <p class="text-white font-semibold">${productData.price} ${productData.discount ? `<span class="line-through text-gray-500">${productData.originalPrice}</span>` : ''}</p>
+                        <p class="stars">★${'★'.repeat(Math.floor(productData.rating))}${'☆'.repeat(5 - Math.floor(productData.rating))}</p>
+                        <p class="text-gray-400">${productData.stockStatus}</p>
+                        <button class="quick-view-btn bg-teal-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-teal-700" onclick='openModal(${JSON.stringify(productData)}, "${element.thumbnail}", "${element.link}")'>Quick View</button>
+                    </div>
+                `;
+                resultBox.appendChild(card);
+            });
         } else {
             noResults.classList.remove('hidden');
         }
