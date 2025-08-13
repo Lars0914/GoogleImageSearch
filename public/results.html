@@ -185,7 +185,7 @@
                 <p class="text-gray-300 mb-2"><strong>Product Type:</strong> ${productData.productType}</p>
                 <p class="text-gray-300 mb-2"><strong>Hardware Material:</strong> ${productData.hardwareMaterial}</p>
                 <p class="text-gray-300 mb-2"><strong>Size:</strong> ${productData.size}</p>
-                <p class="text-xl font-semibold text-white mb-4"><strong>Estimated Value:</strong> ${productData.estimatedValue} <span class="text-gray-400 text-sm">(without considering condition)</span></p>
+                <p class="text-xl font-semibold text-white mb-4"><strong>Estimated Value:</strong> ${productData.estimatedValue}</p>
                 <div class="flex space-x-4">
                     <a href="${link}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">View Source</a>
                 </div>
@@ -199,6 +199,8 @@
 
         if (results.length > 0) {
             const element = results[0]; // Show only the first result
+            console.log(element.title);
+            
             const productData = generateProductData(element.title);
             const card = document.createElement('div');
             card.className = 'card';
