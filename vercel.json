@@ -17,6 +17,10 @@
       "dest": "/api/upload.js"
     },
     {
+      "src": "/assets/(.*)",
+      "dest": "/public/assets/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/public/$1"
     }

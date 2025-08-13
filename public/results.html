@@ -8,7 +8,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            background: url('/assets/background.webp') no-repeat center center fixed, 
+                        linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            background-size: cover;
             min-height: 100vh;
             font-family: 'Inter', sans-serif;
         }
@@ -19,7 +21,7 @@
             padding: 2rem;
         }
         .card {
-            background: #2d3748;
+            background: rgba(45, 55, 72, 0.9); /* Semi-transparent for readability */
             border-radius: 1rem;
             overflow: hidden;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);

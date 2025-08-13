@@ -7,7 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            background: url('/assets/background.webp') no-repeat center center fixed, 
+                        linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            background-size: cover;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -15,7 +17,7 @@
             font-family: 'Inter', sans-serif;
         }
         .card {
-            background: #2d3748;
+            background: rgba(45, 55, 72, 0.9); /* Semi-transparent for readability */
             border-radius: 1rem;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
