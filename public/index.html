@@ -105,15 +105,37 @@
         });
 
         cameraBtn.addEventListener('click', async () => {
+            let selectedDeviceId = null;
+
+            // Log and select back camera if available
             try {
-                // Try front-facing camera or webcam first
-                let stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user' }
-                });
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const cameras = devices.filter(device => device.kind === 'videoinput');
+                console.log('Available cameras:', cameras.map(c => ({ label: c.label, deviceId: c.deviceId })));
+                const backCamera = cameras.find(camera => camera.label.toLowerCase().includes('back'));
+                if (backCamera) {
+                    selectedDeviceId = backCamera.deviceId;
+                    console.log('Selected back camera:', backCamera.label);
+                } else {
+                    console.log('No back camera found, using first available camera.');
+                }
+            } catch (enumErr) {
+                console.error('Error listing cameras:', enumErr);
+                showError('Unable to list cameras. Check device or emulator settings.');
+                return;
+            }
+
+            try {
+                // Try back camera or specific device
+                let constraints = selectedDeviceId
+                    ? { video: { deviceId: { exact: selectedDeviceId } } }
+                    : { video: { facingMode: 'environment' } };
+                let stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.classList.remove('hidden');
                 captureBtn.classList.remove('hidden');
                 video.srcObject = stream;
             } catch (err) {
+                console.error('Camera error:', err);
                 // Fallback to any available camera
                 try {
                     let stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -121,12 +143,13 @@
                     captureBtn.classList.remove('hidden');
                     video.srcObject = stream;
                 } catch (fallbackErr) {
+                    console.error('Fallback camera error:', fallbackErr);
                     if (fallbackErr.name === 'NotAllowedError') {
-                        showError('Camera access denied. Please allow camera permissions in your browser.');
+                        showError('Camera access denied. Ensure permissions are enabled in your device or browser.');
                     } else if (fallbackErr.name === 'NotFoundError') {
-                        showError('No camera found on this device.');
+                        showError('No camera detected. Verify your device or emulator has a working camera.');
                     } else {
-                        showError('Camera unavailable. Please check your camera or browser settings.');
+                        showError('Camera unavailable. Check device settings, close other apps, or try a different browser.');
                     }
                 }
             }
