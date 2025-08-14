@@ -15,7 +15,7 @@
             font-family: 'Inter', sans-serif;
         }
         .card {
-            background: rgba(45, 55, 72, 0.9); /* Semi-transparent for readability */
+            background: rgba(45, 55, 72, 0.9);
             border-radius: 1rem;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -30,7 +30,6 @@
         .btn:hover {
             transform: scale(1.05);
         }
-        /* Loading Spinner Overlay */
         .spinner-overlay {
             position: fixed;
             top: 0;
@@ -47,8 +46,8 @@
             width: 64px;
             height: 64px;
             border: 6px solid transparent;
-            border-top-color: #4f46e5; /* Indigo */
-            border-right-color: #14b8a6; /* Teal */
+            border-top-color: #4f46e5;
+            border-right-color: #14b8a6;
             border-radius: 50%;
             animation: spin 1s linear infinite, pulse 1.5s ease-in-out infinite;
             box-shadow: 0 0 15px rgba(79, 70, 229, 0.5), 0 0 30px rgba(20, 184, 166, 0.3);
@@ -107,12 +106,29 @@
 
         cameraBtn.addEventListener('click', async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // Try front-facing camera or webcam first
+                let stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' }
+                });
                 video.classList.remove('hidden');
                 captureBtn.classList.remove('hidden');
                 video.srcObject = stream;
             } catch (err) {
-                showError('Camera access denied or unavailable.');
+                // Fallback to any available camera
+                try {
+                    let stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.classList.remove('hidden');
+                    captureBtn.classList.remove('hidden');
+                    video.srcObject = stream;
+                } catch (fallbackErr) {
+                    if (fallbackErr.name === 'NotAllowedError') {
+                        showError('Camera access denied. Please allow camera permissions in your browser.');
+                    } else if (fallbackErr.name === 'NotFoundError') {
+                        showError('No camera found on this device.');
+                    } else {
+                        showError('Camera unavailable. Please check your camera or browser settings.');
+                    }
+                }
             }
         });
 
@@ -130,7 +146,7 @@
         });
 
         async function uploadImage(file) {
-            spinnerOverlay.style.display = 'flex'; // Show spinner
+            spinnerOverlay.style.display = 'flex';
             const formData = new FormData();
             formData.append('image', file);
             try {
@@ -138,7 +154,7 @@
                     method: 'POST',
                     body: formData
                 });
-                spinnerOverlay.style.display = 'none'; // Hide spinner
+                spinnerOverlay.style.display = 'none';
                 if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
                 const data = await res.json();
                 if (data.error) {
@@ -148,7 +164,7 @@
                     window.location.href = '/results.html';
                 }
             } catch (err) {
-                spinnerOverlay.style.display = 'none'; // Hide spinner on error
+                spinnerOverlay.style.display = 'none';
                 showError(`Error: ${err.message}`);
             }
         }
