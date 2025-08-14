@@ -105,37 +105,15 @@
         });
 
         cameraBtn.addEventListener('click', async () => {
-            let selectedDeviceId = null;
-
-            // Log and select front-facing camera if available
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const cameras = devices.filter(device => device.kind === 'videoinput');
-                console.log('Available cameras:', cameras);
-                const frontCamera = cameras.find(camera => camera.label.toLowerCase().includes('front'));
-                if (frontCamera) {
-                    selectedDeviceId = frontCamera.deviceId;
-                    console.log('Selected front camera:', frontCamera.label);
-                } else {
-                    console.log('No front camera found, using first available camera.');
-                }
-            } catch (enumErr) {
-                console.error('Error listing cameras:', enumErr);
-                showError('Unable to list cameras. Please check device settings.');
-                return;
-            }
-
-            try {
-                // Try specific device or front-facing camera
-                let constraints = selectedDeviceId
-                    ? { video: { deviceId: { exact: selectedDeviceId } } }
-                    : { video: { facingMode: 'user' } };
-                let stream = await navigator.mediaDevices.getUserMedia(constraints);
+                // Try front-facing camera or webcam first
+                let stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' }
+                });
                 video.classList.remove('hidden');
                 captureBtn.classList.remove('hidden');
                 video.srcObject = stream;
             } catch (err) {
-                console.error('Camera error:', err);
                 // Fallback to any available camera
                 try {
                     let stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -143,13 +121,12 @@
                     captureBtn.classList.remove('hidden');
                     video.srcObject = stream;
                 } catch (fallbackErr) {
-                    console.error('Fallback camera error:', fallbackErr);
                     if (fallbackErr.name === 'NotAllowedError') {
-                        showError('Camera access denied. Please ensure permissions are enabled and no other apps are using the camera.');
+                        showError('Camera access denied. Please allow camera permissions in your browser.');
                     } else if (fallbackErr.name === 'NotFoundError') {
-                        showError('No camera detected. Please verify your device’s camera is enabled and functional.');
+                        showError('No camera found on this device.');
                     } else {
-                        showError('Camera unavailable. Close other apps, restart your device, or try a different browser (e.g., Chrome/Firefox).');
+                        showError('Camera unavailable. Please check your camera or browser settings.');
                     }
                 }
             }
