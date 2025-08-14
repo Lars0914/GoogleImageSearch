@@ -112,12 +112,18 @@
                 console.log('Available cameras:', cameras);
             } catch (err) {
                 console.error('Error listing cameras:', err);
+                showError('Unable to list cameras. Please check device settings.');
+                return;
             }
 
             try {
-                // Try front-facing camera first
+                // Try front-facing camera with permissive constraints
                 let stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user' }
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
                 });
                 video.classList.remove('hidden');
                 captureBtn.classList.remove('hidden');
@@ -126,18 +132,20 @@
                 console.error('Front-facing camera error:', err);
                 // Fallback to any available camera
                 try {
-                    let stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    let stream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: { ideal: 1280 }, height: { ideal: 720 } }
+                    });
                     video.classList.remove('hidden');
                     captureBtn.classList.remove('hidden');
                     video.srcObject = stream;
                 } catch (fallbackErr) {
                     console.error('Fallback camera error:', fallbackErr);
                     if (fallbackErr.name === 'NotAllowedError') {
-                        showError('Camera access denied. Please allow camera permissions in your browser settings (e.g., Settings > Privacy > Camera).');
+                        showError('Camera access denied. Please ensure camera permissions are enabled in your browser (e.g., Settings > Privacy > Camera) and try again.');
                     } else if (fallbackErr.name === 'NotFoundError') {
-                        showError('No camera found. Please ensure your device has a working camera.');
+                        showError('No camera detected. Please ensure your device’s camera is enabled and not in use by another app.');
                     } else {
-                        showError('Camera unavailable. Try enabling your camera, checking browser settings, or using a different browser (e.g., Chrome, Firefox).');
+                        showError('Camera unavailable. Try closing other apps, restarting your browser, or using Chrome/Firefox. Check device settings if the issue persists.');
                     }
                 }
             }
