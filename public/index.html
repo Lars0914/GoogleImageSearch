@@ -105,47 +105,51 @@
         });
 
         cameraBtn.addEventListener('click', async () => {
-            // Log available cameras for debugging
+            let selectedDeviceId = null;
+
+            // Log and select front-facing camera if available
             try {
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const cameras = devices.filter(device => device.kind === 'videoinput');
                 console.log('Available cameras:', cameras);
-            } catch (err) {
-                console.error('Error listing cameras:', err);
+                const frontCamera = cameras.find(camera => camera.label.toLowerCase().includes('front'));
+                if (frontCamera) {
+                    selectedDeviceId = frontCamera.deviceId;
+                    console.log('Selected front camera:', frontCamera.label);
+                } else {
+                    console.log('No front camera found, using first available camera.');
+                }
+            } catch (enumErr) {
+                console.error('Error listing cameras:', enumErr);
                 showError('Unable to list cameras. Please check device settings.');
                 return;
             }
 
             try {
-                // Try front-facing camera with permissive constraints
-                let stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'user',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                });
+                // Try specific device or front-facing camera
+                let constraints = selectedDeviceId
+                    ? { video: { deviceId: { exact: selectedDeviceId } } }
+                    : { video: { facingMode: 'user' } };
+                let stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.classList.remove('hidden');
                 captureBtn.classList.remove('hidden');
                 video.srcObject = stream;
             } catch (err) {
-                console.error('Front-facing camera error:', err);
+                console.error('Camera error:', err);
                 // Fallback to any available camera
                 try {
-                    let stream = await navigator.mediaDevices.getUserMedia({
-                        video: { width: { ideal: 1280 }, height: { ideal: 720 } }
-                    });
+                    let stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.classList.remove('hidden');
                     captureBtn.classList.remove('hidden');
                     video.srcObject = stream;
                 } catch (fallbackErr) {
                     console.error('Fallback camera error:', fallbackErr);
                     if (fallbackErr.name === 'NotAllowedError') {
-                        showError('Camera access denied. Please ensure camera permissions are enabled in your browser (e.g., Settings > Privacy > Camera) and try again.');
+                        showError('Camera access denied. Please ensure permissions are enabled and no other apps are using the camera.');
                     } else if (fallbackErr.name === 'NotFoundError') {
-                        showError('No camera detected. Please ensure your device’s camera is enabled and not in use by another app.');
+                        showError('No camera detected. Please verify your device’s camera is enabled and functional.');
                     } else {
-                        showError('Camera unavailable. Try closing other apps, restarting your browser, or using Chrome/Firefox. Check device settings if the issue persists.');
+                        showError('Camera unavailable. Close other apps, restart your device, or try a different browser (e.g., Chrome/Firefox).');
                     }
                 }
             }
