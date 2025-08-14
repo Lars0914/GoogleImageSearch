@@ -105,8 +105,17 @@
         });
 
         cameraBtn.addEventListener('click', async () => {
+            // Log available cameras for debugging
             try {
-                // Try front-facing camera or webcam first
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const cameras = devices.filter(device => device.kind === 'videoinput');
+                console.log('Available cameras:', cameras);
+            } catch (err) {
+                console.error('Error listing cameras:', err);
+            }
+
+            try {
+                // Try front-facing camera first
                 let stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'user' }
                 });
@@ -114,6 +123,7 @@
                 captureBtn.classList.remove('hidden');
                 video.srcObject = stream;
             } catch (err) {
+                console.error('Front-facing camera error:', err);
                 // Fallback to any available camera
                 try {
                     let stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -121,12 +131,13 @@
                     captureBtn.classList.remove('hidden');
                     video.srcObject = stream;
                 } catch (fallbackErr) {
+                    console.error('Fallback camera error:', fallbackErr);
                     if (fallbackErr.name === 'NotAllowedError') {
-                        showError('Camera access denied. Please allow camera permissions in your browser.');
+                        showError('Camera access denied. Please allow camera permissions in your browser settings (e.g., Settings > Privacy > Camera).');
                     } else if (fallbackErr.name === 'NotFoundError') {
-                        showError('No camera found on this device.');
+                        showError('No camera found. Please ensure your device has a working camera.');
                     } else {
-                        showError('Camera unavailable. Please check your camera or browser settings.');
+                        showError('Camera unavailable. Try enabling your camera, checking browser settings, or using a different browser (e.g., Chrome, Firefox).');
                     }
                 }
             }
