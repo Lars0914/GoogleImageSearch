@@ -5,243 +5,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Lens Image Search - Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <style>
         body {
             background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
             min-height: 100vh;
+            padding: 1rem;
             font-family: 'Inter', sans-serif;
         }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            padding: 2rem;
-        }
-        .card {
-            background: rgba(45, 55, 72, 0.9); /* Semi-transparent for readability */
+        .result-card {
+            background: rgba(45, 55, 72, 0.9);
             border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 1.5rem;
+            max-width: 90%;
+            margin: 0 auto 1rem;
+            transition: transform 0.3s ease;
         }
-        .card:hover {
+        .result-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
         }
-        .card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        .card-content {
-            padding: 1rem;
-        }
-        .card-content a {
-            color: #e2e8f0;
-            font-weight: 500;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        .card-content a:hover {
-            color: #5a67d8;
-        }
-        .back-btn, .quick-view-btn {
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .back-btn:hover, .quick-view-btn:hover {
-            transform: scale(1.05);
-        }
-        /* Modal Styles */
-        .modal-overlay {
+        .modal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
         }
         .modal-content {
-            background: #2d3748;
+            background: rgba(45, 55, 72, 0.9);
+            margin: 5% auto;
+            padding: 1.5rem;
             border-radius: 1rem;
-            max-width: 600px;
-            width: 90%;
-            padding: 2rem;
+            max-width: 90%;
+            width: 300px;
             position: relative;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-            animation: modalFadeIn 0.3s ease-in-out;
         }
-        .modal-close {
+        .close {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: #e2e8f0;
+            top: 0.5rem;
+            right: 0.5rem;
             font-size: 1.5rem;
+            color: #fff;
             cursor: pointer;
         }
-        .stars {
-            color: #f59e0b;
+        @media (min-width: 640px) {
+            .result-card {
+                max-width: 24rem;
+            }
+            .modal-content {
+                width: 400px;
+            }
         }
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
+        @media (min-width: 1024px) {
+            .result-card {
+                max-width: 28rem;
+            }
+            .modal-content {
+                width: 500px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">&times;</button>
-            <div id="modalBody"></div>
-        </div>
-    </div>
-    <div class="max-w-7xl mx-auto py-6">
-        <button onclick="window.location.href='/index.html'" class="back-btn bg-indigo-600 text-white px-6 py-3 rounded-lg m-4 hover:bg-indigo-700">
-            Back to Upload
-        </button>
-        <h1 class="text-3xl font-bold text-white text-center mb-6">Search Results</h1>
-        <div id="resultBox" class="grid-container"></div>
-        <p id="noResults" class="text-white text-center hidden">No results found.</p>
-    </div>
+    <div id="resultsContainer"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-        AOS.init({ duration: 800, once: true });
-
-        const resultBox = document.querySelector('#resultBox');
-        const noResults = document.querySelector('#noResults');
-        const modalOverlay = document.querySelector('#modalOverlay');
-        const modalBody = document.querySelector('#modalBody');
-        const results = JSON.parse(localStorage.getItem('searchResults') || '[]');
-
-        // Simulated product data generator
-        function generateProductData(title) {
-            const categories = {
-                clothing: ['shirt', 'jacket', 'pants', 'dress', 'shoes'],
-                electronics: ['phone', 'laptop', 'tablet', 'camera', 'headphones'],
-                home: ['chair', 'table', 'lamp', 'sofa', 'bed'],
-                accessories: ['watch', 'bag', 'sunglasses', 'wallet', 'belt']
-            };
-
-            let category = 'other';
-            title = title.toLowerCase();
-            for (const [cat, keywords] of Object.entries(categories)) {
-                if (keywords.some(keyword => title.includes(keyword))) {
-                    category = cat;
-                    break;
-                }
-            }
-
-            const priceRanges = {
-                clothing: [20, 100],
-                electronics: [100, 1000],
-                home: [50, 500],
-                accessories: [30, 150],
-                other: [10, 200]
-            };
-            const [minPrice, maxPrice] = priceRanges[category];
-            const price = (Math.random() * (maxPrice - minPrice) + minPrice).toFixed(2);
-            const discount = Math.random() < 0.3 ? (Math.random() * 0.2 + 0.1).toFixed(2) : 0;
-            const finalPrice = discount ? (price * (1 - discount)).toFixed(2) : price;
-
-            const rating = (4 + Math.random()).toFixed(1);
-            const reviewCount = Math.floor(Math.random() * 451 + 50);
-            const stockStatus = Math.random() < 0.8 ? 'In Stock' : Math.random() < 0.95 ? 'Low Stock' : 'Out of Stock';
-
-            const descriptions = {
-                clothing: `Premium ${title} crafted with high-quality materials for comfort and style.`,
-                electronics: `Cutting-edge ${title} with advanced features and sleek design.`,
-                home: `Elegant ${title} designed to enhance your living space.`,
-                accessories: `Stylish ${title} perfect for any occasion.`,
-                other: `Versatile ${title} built for durability and performance.`
-            };
-            const description = descriptions[category];
-
-            const specs = {
-                clothing: ['Material: Cotton Blend', 'Sizes: S-XXL', 'Care: Machine Washable'],
-                electronics: ['Processor: Octa-Core', 'Battery: 4000mAh', 'Warranty: 1 Year'],
-                home: ['Material: Solid Wood', 'Dimensions: 120x60x80cm', 'Assembly: Required'],
-                accessories: ['Material: Genuine Leather', 'Color: Multiple Options', 'Warranty: 6 Months'],
-                other: ['Weight: 1-5kg', 'Durability: High', 'Use: Multi-purpose']
-            };
-
-            const reviews = [
-                `Great ${title}! Exceeded my expectations.`,
-                `Love the design and quality of this ${title}.`,
-                `Very reliable ${title}, worth every penny.`
-            ].slice(0, Math.floor(Math.random() * 3 + 1));
-
-            return {
-                name: `${title.split(' ').slice(0, 3).join(' ')} ${category !== 'other' ? category.charAt(0).toUpperCase() + category.slice(1) : ''}`.trim(),
-                price: `$${finalPrice}`,
-                originalPrice: discount ? `$${price}` : null,
-                discount: discount ? `${(discount * 100).toFixed(0)}% Off` : null,
-                rating,
-                reviewCount,
-                stockStatus,
-                description,
-                specs: specs[category],
-                reviews
-            };
-        }
-
-        function openModal(productData, thumbnail, link) {
-            modalBody.innerHTML = `
-                <img src="${thumbnail}" alt="${productData.name}" class="w-full h-64 object-cover rounded-lg mb-4">
-                <h2 class="text-2xl font-bold text-white mb-2">${productData.name}</h2>
-                <p class="text-gray-300 mb-2">${productData.description}</p>
-                <div class="flex items-center mb-2">
-                    <span class="stars text-lg">★${'★'.repeat(Math.floor(productData.rating))}${'☆'.repeat(5 - Math.floor(productData.rating))}</span>
-                    <span class="text-gray-400 ml-2">(${productData.reviewCount} reviews)</span>
-                </div>
-                <p class="text-xl font-semibold text-white mb-2">${productData.price} ${productData.discount ? `<span class="line-through text-gray-500">${productData.originalPrice}</span> <span class="text-green-400">${productData.discount}</span>` : ''}</p>
-                <p class="text-gray-300 mb-2">Stock: <span class="${productData.stockStatus === 'In Stock' ? 'text-green-400' : productData.stockStatus === 'Low Stock' ? 'text-yellow-400' : 'text-red-400'}">${productData.stockStatus}</span></p>
-                <h3 class="text-lg font-semibold text-white mb-1">Specifications</h3>
-                <ul class="list-disc list-inside text-gray-300 mb-2">
-                    ${productData.specs.map(spec => `<li>${spec}</li>`).join('')}
-                </ul>
-                <h3 class="text-lg font-semibold text-white mb-1">Customer Reviews</h3>
-                <ul class="list-disc list-inside text-gray-300 mb-4">
-                    ${productData.reviews.map(review => `<li>${review}</li>`).join('')}
-                </ul>
-                <div class="flex space-x-4">
-                    <a href="${link}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">View Source</a>
-                </div>
-            `;
-            modalOverlay.style.display = 'flex';
-        }
-
-        function closeModal() {
-            modalOverlay.style.display = 'none';
-        }
+        AOS.init();
+        const results = JSON.parse(localStorage.getItem('searchResults')) || [];
+        const container = document.getElementById('resultsContainer');
 
         if (results.length > 0) {
-            results.forEach((element, index) => {
-                const productData = generateProductData(element.title);
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.setAttribute('data-aos', index % 2 === 0 ? 'fade-up' : 'zoom-in');
-                card.setAttribute('data-aos-delay', `${index * 100}`);
-                card.innerHTML = `
-                    <img src="${element.thumbnail}" alt="${productData.name}">
-                    <div class="card-content">
-                        <a href="${element.link}" target="_blank">${productData.name}</a>
-                        <p class="text-white font-semibold">${productData.price} ${productData.discount ? `<span class="line-through text-gray-500">${productData.originalPrice}</span>` : ''}</p>
-                        <p class="stars">★${'★'.repeat(Math.floor(productData.rating))}${'☆'.repeat(5 - Math.floor(productData.rating))}</p>
-                        <p class="text-gray-400">${productData.stockStatus}</p>
-                        <button class="quick-view-btn bg-teal-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-teal-700" onclick='openModal(${JSON.stringify(productData)}, "${element.thumbnail}", "${element.link}")'>Quick View</button>
-                    </div>
-                `;
-                resultBox.appendChild(card);
+            const result = results[0]; // Single result
+            const brands = {
+                luxury: ['Gucci', 'Louis Vuitton', 'Chanel', 'Hermès', 'Prada', 'Rolex', 'Cartier'],
+                midrange: ['Coach', 'Michael Kors', 'Kate Spade', 'Fossil', 'Tommy Hilfiger']
+            };
+            const brandPriceRanges = {
+                luxury: [1000, 5000],
+                midrange: [200, 800],
+                generic: [50, 300]
+            };
+
+            const titleParts = result.title.split(' ').slice(0, 3).join(' '); // Shorten name
+            const detectedBrand = brands.luxury.find(b => titleParts.toLowerCase().includes(b.toLowerCase())) ||
+                                brands.midrange.find(b => titleParts.toLowerCase().includes(b.toLowerCase())) ||
+                                'Generic';
+            const priceRange = brandPriceRanges[detectedBrand.toLowerCase()] || brandPriceRanges.generic;
+            const hardwareMaterial = 'Leather, Metal'; // Placeholder, refine with API data if available
+            const productType = 'Handbag'; // Placeholder, refine with API data
+            const size = '30x20x10cm'; // Placeholder, refine with API data
+            const estimatedValue = `US$${priceRange[0].toLocaleString()}-US$${priceRange[1].toLocaleString()} (without regard to condition)`;
+
+            const card = document.createElement('div');
+            card.className = 'result-card text-white mb-4';
+            card.setAttribute('data-aos', 'fade-up');
+            card.innerHTML = `
+                <h2 class="text-xl font-bold">${detectedBrand} ${titleParts}</h2>
+                <p><strong>Hardware Material:</strong> ${hardwareMaterial}</p>
+                <p><strong>Product Type:</strong> ${productType}</p>
+                <p><strong>Size:</strong> ${size}</p>
+                <p><strong>Estimated Value:</strong> ${estimatedValue}</p>
+                <button class="btn mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700" onclick="openModal()">Quick View</button>
+            `;
+            container.appendChild(card);
+
+            const modal = document.createElement('div');
+            modal.id = 'modal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <h2 class="text-xl font-bold text-white mb-2">Quick View</h2>
+                    <p><strong>Brand name and model:</strong> ${detectedBrand} ${titleParts}</p>
+                    <p><strong>Product Type:</strong> ${productType}</p>
+                    <p><strong>Size:</strong> ${size}</p>
+                    <p><strong>Estimated value without regard to condition:</strong> ${estimatedValue}</p>
+                </div>
+            `;
+            container.appendChild(modal);
+
+            window.openModal = function() {
+                document.getElementById('modal').style.display = 'flex';
+            };
+
+            window.closeModal = function() {
+                document.getElementById('modal').style.display = 'none';
+            };
+
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === document.getElementById('modal')) {
+                    closeModal();
+                }
             });
         } else {
-            noResults.classList.remove('hidden');
+            container.innerHTML = '<p class="text-white text-center">No results found.</p>';
         }
     </script>
 </body>

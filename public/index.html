@@ -19,6 +19,8 @@
             border-radius: 1rem;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 1.5rem;
+            max-width: 90%; /* Responsive max-width */
         }
         .card:hover {
             transform: translateY(-5px);
@@ -51,6 +53,20 @@
             border-radius: 50%;
             animation: spin 1s linear infinite, pulse 1.5s ease-in-out infinite;
             box-shadow: 0 0 15px rgba(79, 70, 229, 0.5), 0 0 30px rgba(20, 184, 166, 0.3);
+        }
+        #video, #canvas {
+            max-width: 100%; /* Ensure video and canvas scale with card */
+            height: auto;
+        }
+        @media (min-width: 640px) {
+            .card {
+                max-width: 24rem; /* Tailwind md breakpoint */
+            }
+        }
+        @media (min-width: 1024px) {
+            .card {
+                max-width: 28rem; /* Tailwind lg breakpoint */
+            }
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
