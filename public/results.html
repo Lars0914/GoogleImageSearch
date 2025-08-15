@@ -1,207 +1,369 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Google Lens Image Search - Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
+      body {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+      }
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        padding: 2rem;
+      }
+      .card {
+        background: rgba(45, 55, 72, 0.9);
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+      }
+      .card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+      .card-content {
+        padding: 1rem;
+      }
+      .card-content a {
+        color: #e2e8f0;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+      .card-content a:hover {
+        color: #5a67d8;
+      }
+      .back-btn {
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
+      .back-btn:hover {
+        transform: scale(1.05);
+      }
+      /* Modal Styles */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+      .modal-content {
+        background: #2d3748;
+        border-radius: 1rem;
+        max-width: 600px;
+        width: 90%;
+        padding: 2rem;
+        position: relative;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        animation: modalFadeIn 0.3s ease-in-out;
+        height: auto; /* Adjust height to content */
+        max-height: 80vh; /* Limit max height */
+        overflow-y: auto; /* Scroll if content overflows */
+      }
+      .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        color: #e2e8f0;
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+      .stars {
+        color: #f59e0b;
+      }
+      @keyframes modalFadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
         }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            padding: 2rem;
+        to {
+          opacity: 1;
+          transform: scale(1);
         }
-        .card {
-            background: rgba(45, 55, 72, 0.9);
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-        }
-        .card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        .card-content {
-            padding: 1rem;
-        }
-        .card-content a {
-            color: #e2e8f0;
-            font-weight: 500;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        .card-content a:hover {
-            color: #5a67d8;
-        }
-        .back-btn {
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .back-btn:hover {
-            transform: scale(1.05);
-        }
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-        .modal-content {
-            background: #2d3748;
-            border-radius: 1rem;
-            max-width: 600px;
-            width: 90%;
-            padding: 2rem;
-            position: relative;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-            animation: modalFadeIn 0.3s ease-in-out;
-            height: auto; /* Adjust height to content */
-            max-height: 80vh; /* Limit max height */
-            overflow-y: auto; /* Scroll if content overflows */
-        }
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: #e2e8f0;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        .stars {
-            color: #f59e0b;
-        }
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
-        }
+      }
     </style>
-</head>
-<body>
-    <div class="fixed top-0 left-0 w-full bg-gray-800 text-white text-center py-2 z-50">
-        <button onclick="window.location.href='/index.html'" class="back-btn bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">
-            Back to Home
-        </button>
+  </head>
+  <body>
+    <div
+      class="fixed top-0 left-0 w-full bg-gray-800 text-white text-center py-2 z-50"
+    >
+      <button
+        onclick="window.location.href='/index.html'"
+        class="back-btn bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700"
+      >
+        Back to Home
+      </button>
     </div>
     <div class="max-w-7xl mx-auto py-6">
-        <h1 class="text-3xl font-bold text-white text-center mb-6">Search Results</h1>
-        <div id="resultBox" class="grid-container"></div>
-        <p id="noResults" class="text-white text-center hidden">No results found.</p>
+      <h1 class="text-3xl font-bold text-white text-center mb-6">
+        Search Results
+      </h1>
+      <div id="resultBox" class="grid-container"></div>
+      <p id="noResults" class="text-white text-center hidden">
+        No results found.
+      </p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
     <script>
-        AOS.init({ duration: 800, once: true });
+      AOS.init({ duration: 800, once: true });
 
-        const resultBox = document.querySelector('#resultBox');
-        const noResults = document.querySelector('#noResults');
-        const modalOverlay = document.createElement('div');
-        modalOverlay.id = 'modalOverlay';
-        modalOverlay.className = 'modal-overlay';
-        modalOverlay.innerHTML = `
+      const resultBox = document.querySelector("#resultBox");
+      const noResults = document.querySelector("#noResults");
+      const modalOverlay = document.createElement("div");
+      modalOverlay.id = "modalOverlay";
+      modalOverlay.className = "modal-overlay";
+      modalOverlay.innerHTML = `
             <div class="modal-content">
                 <button class="modal-close" onclick="closeModal()">&times;</button>
                 <div id="modalBody"></div>
             </div>
         `;
-        document.body.appendChild(modalOverlay);
+      document.body.appendChild(modalOverlay);
 
-        const results = JSON.parse(localStorage.getItem('searchResults') || '[]');
+      const results = JSON.parse(localStorage.getItem("searchResults") || "[]");
 
-        // Simulated product data generator
-        function generateProductData(title) {
-            const categories = {
-                handbag: { keywords: ['handbag', 'purse', 'bag', 'tote', 'clutch'], materials: ['Leather, Metal', 'Canvas, Gold Hardware', 'Patent Leather, Ruthenium'], sizes: ['25x15x10cm', '30x20x10cm', '35x25x15cm'], priceRanges: [500, 5000] },
-                watch: { keywords: ['watch', 'timepiece', 'rolex', 'cartier'], materials: ['Oystersteel', 'Gold', 'Stainless Steel'], sizes: ['37mm', '40mm', '44mm'], priceRanges: [5000, 75000] },
-                shoe: { keywords: ['shoe', 'sneaker', 'boot', 'nike', 'adidas'], materials: ['Synthetics, Mesh', 'Leather, Rubber', 'Suede'], sizes: ['US 5-15', 'EU 36-46'], priceRanges: [50, 200] },
-                dress: { keywords: ['dress', 'gown', 'chanel dress'], materials: ['Tweed, Silk', 'Chiffon, Pearls', 'Satin'], sizes: ['S-XXL', '2-14'], priceRanges: [1000, 100000] },
-                wallet: { keywords: ['wallet', 'billfold', 'louis vuitton wallet'], materials: ['Leather, Canvas', 'Metal Hardware', 'Suede Lining'], sizes: ['10x15cm', '12x10cm'], priceRanges: [285, 6885] },
-                jewelry: { keywords: ['jewelry', 'necklace', 'bracelet', 'ring', 'earring'], materials: ['Gold, Diamonds', 'Silver, Gemstones', 'Platinum'], sizes: ['Adjustable', '18-20in', '7-9'], priceRanges: [1000, 50000] },
-                belt: { keywords: ['belt', 'waistbelt'], materials: ['Leather, Buckle', 'Canvas, Brass'], sizes: ['30-40in', '80-100cm'], priceRanges: [50, 500] },
-                hat: { keywords: ['hat', 'cap', 'beanie'], materials: ['Wool, Cotton', 'Straw, Leather'], sizes: ['S-M', 'One Size'], priceRanges: [20, 200] },
-                eyewear: { keywords: ['eyewear', 'sunglasses', 'glasses'], materials: ['Acetate, Metal', 'Plastic, Polarized Lens'], sizes: ['52-58mm lens'], priceRanges: [50, 500] },
-                glove: { keywords: ['glove', 'mittens'], materials: ['Leather, Wool', 'Cotton, Rubber'], sizes: ['S-L'], priceRanges: [20, 100] },
-                scarf: { keywords: ['scarf', 'shawl'], materials: ['Silk, Wool', 'Cashmere'], sizes: ['70x200cm', '180x30cm'], priceRanges: [50, 300] },
-                cosmetic: { keywords: ['cosmetic', 'makeup', 'lipstick', 'foundation'], materials: ['Vegan Ingredients', 'Organic Compounds'], sizes: ['30ml', '50g'], priceRanges: [10, 100] },
-                household: { keywords: ['chair', 'table', 'lamp', 'sofa', 'bed'], materials: ['Wood, Metal', 'Glass, Fabric'], sizes: ['Standard', 'Queen'], priceRanges: [50, 1000] }
-            };
+      // Simulated product data generator
+      function generateProductData(title) {
+        const categories = {
+          handbag: {
+            keywords: ["handbag", "purse", "bag", "tote", "clutch"],
+            materials: [
+              "Leather, Metal",
+              "Canvas, Gold Hardware",
+              "Patent Leather, Ruthenium",
+            ],
+            sizes: ["25x15x10cm", "30x20x10cm", "35x25x15cm"],
+            priceRanges: [500, 5000],
+          },
+          watch: {
+            keywords: ["watch", "timepiece", "rolex", "cartier"],
+            materials: ["Oystersteel", "Gold", "Stainless Steel"],
+            sizes: ["37mm", "40mm", "44mm"],
+            priceRanges: [5000, 75000],
+          },
+          shoe: {
+            keywords: ["shoe", "sneaker", "boot", "nike", "adidas"],
+            materials: ["Synthetics, Mesh", "Leather, Rubber", "Suede"],
+            sizes: ["US 5-15", "EU 36-46"],
+            priceRanges: [50, 200],
+          },
+          dress: {
+            keywords: ["dress", "gown", "chanel dress"],
+            materials: ["Tweed, Silk", "Chiffon, Pearls", "Satin"],
+            sizes: ["S-XXL", "2-14"],
+            priceRanges: [1000, 100000],
+          },
+          wallet: {
+            keywords: ["wallet", "billfold", "louis vuitton wallet"],
+            materials: ["Leather, Canvas", "Metal Hardware", "Suede Lining"],
+            sizes: ["10x15cm", "12x10cm"],
+            priceRanges: [285, 6885],
+          },
+          jewelry: {
+            keywords: ["jewelry", "necklace", "bracelet", "ring", "earring"],
+            materials: ["Gold, Diamonds", "Silver, Gemstones", "Platinum"],
+            sizes: ["Adjustable", "18-20in", "7-9"],
+            priceRanges: [1000, 50000],
+          },
+          belt: {
+            keywords: ["belt", "waistbelt"],
+            materials: ["Leather, Buckle", "Canvas, Brass"],
+            sizes: ["30-40in", "80-100cm"],
+            priceRanges: [50, 500],
+          },
+          hat: {
+            keywords: ["hat", "cap", "beanie"],
+            materials: ["Wool, Cotton", "Straw, Leather"],
+            sizes: ["S-M", "One Size"],
+            priceRanges: [20, 200],
+          },
+          eyewear: {
+            keywords: ["eyewear", "sunglasses", "glasses"],
+            materials: ["Acetate, Metal", "Plastic, Polarized Lens"],
+            sizes: ["52-58mm lens"],
+            priceRanges: [50, 500],
+          },
+          glove: {
+            keywords: ["glove", "mittens"],
+            materials: ["Leather, Wool", "Cotton, Rubber"],
+            sizes: ["S-L"],
+            priceRanges: [20, 100],
+          },
+          scarf: {
+            keywords: ["scarf", "shawl"],
+            materials: ["Silk, Wool", "Cashmere"],
+            sizes: ["70x200cm", "180x30cm"],
+            priceRanges: [50, 300],
+          },
+          cosmetic: {
+            keywords: ["cosmetic", "makeup", "lipstick", "foundation"],
+            materials: ["Vegan Ingredients", "Organic Compounds"],
+            sizes: ["30ml", "50g"],
+            priceRanges: [10, 100],
+          },
+          household: {
+            keywords: ["chair", "table", "lamp", "sofa", "bed"],
+            materials: ["Wood, Metal", "Glass, Fabric"],
+            sizes: ["Standard", "Queen"],
+            priceRanges: [50, 1000],
+          },
+        };
 
-            let category = 'other';
-            let selectedCategory = { materials: ['Varies'], sizes: ['Varies'], priceRanges: [50, 300] };
-            title = title.toLowerCase();
-            for (const [cat, data] of Object.entries(categories)) {
-                if (data.keywords.some(keyword => title.includes(keyword))) {
-                    category = cat;
-                    selectedCategory = data;
-                    break;
-                }
-            }
-
-            const brands = ['Gucci', 'Prada', 'Louis Vuitton', 'Chanel', 'Hermès', 'Dior', 'Coach', 'Michael Kors', 'Kate Spade', 'Tory Burch', 'Rolex', 'Cartier', 'Nike', 'Adidas', 'Generic'];
-            const detectedBrand = brands.find(b => title.includes(b.toLowerCase())) || 'Generic';
-
-            const [minPrice, maxPrice] = selectedCategory.priceRanges;
-            const priceLow = minPrice.toLocaleString('en-US');
-            const priceHigh = maxPrice.toLocaleString('en-US');
-
-            const name = title.split(' ').slice(0, 3).join(' ').replace(detectedBrand, '').trim() || `${detectedBrand} ${category.charAt(0).toUpperCase() + category.slice(1)}`;
-            const hardwareMaterial = selectedCategory.materials[Math.floor(Math.random() * selectedCategory.materials.length)];
-            const productType = category.charAt(0).toUpperCase() + category.slice(1);
-            const size = selectedCategory.sizes[Math.floor(Math.random() * selectedCategory.sizes.length)];
-            const estimatedValue = `US$${priceLow} - US$${priceHigh} (estimated value without considering the condition)`;
-
-            return {
-                brand: detectedBrand,
-                name,
-                hardwareMaterial,
-                productType,
-                size,
-                estimatedValue
-            };
+        let category = "other";
+        let selectedCategory = {
+          materials: ["Varies"],
+          sizes: ["Varies"],
+          priceRanges: [50, 300],
+        };
+        title = title.toLowerCase();
+        for (const [cat, data] of Object.entries(categories)) {
+          if (data.keywords.some((keyword) => title.includes(keyword))) {
+            category = cat;
+            selectedCategory = data;
+            break;
+          }
         }
 
-        if (results.length > 0) {
-            results.forEach((element, index) => {
-                const productData = generateProductData(element.title);
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.setAttribute('data-aos', index % 2 === 0 ? 'fade-up' : 'zoom-in');
-                card.setAttribute('data-aos-delay', `${index * 100}`);
-                card.innerHTML = `
+        const brands = [
+          "Gucci",
+          "Prada",
+          "Louis Vuitton",
+          "Chanel",
+          "Hermès",
+          "Dior",
+          "Coach",
+          "Michael Kors",
+          "Kate Spade",
+          "Tory Burch",
+          "Rolex",
+          "Cartier",
+          "Nike",
+          "Adidas",
+          "Generic",
+        ];
+        const detectedBrand =
+          brands.find((b) => title.includes(b.toLowerCase())) || "Generic";
+
+        const [minPrice, maxPrice] = selectedCategory.priceRanges;
+        const priceLow = minPrice.toLocaleString("en-US");
+        const priceHigh = maxPrice.toLocaleString("en-US");
+
+        const name =
+          title
+            .split(" ")
+            .slice(0, 3)
+            .join(" ")
+            .replace(detectedBrand, "")
+            .trim() ||
+          `${detectedBrand} ${
+            category.charAt(0).toUpperCase() + category.slice(1)
+          }`;
+        const hardwareMaterial =
+          selectedCategory.materials[
+            Math.floor(Math.random() * selectedCategory.materials.length)
+          ];
+        const productType =
+          category.charAt(0).toUpperCase() + category.slice(1);
+        const size =
+          selectedCategory.sizes[
+            Math.floor(Math.random() * selectedCategory.sizes.length)
+          ];
+        const estimatedValue = `US$${priceLow} - US$${priceHigh} (estimated value without considering the condition)`;
+
+        return {
+          brand: detectedBrand,
+          name,
+          hardwareMaterial,
+          productType,
+          size,
+          estimatedValue,
+        };
+      }
+      // Globally defined functions
+      function openModal(productData, thumbnail, link) {
+        const modalBody = document.querySelector("#modalBody");
+        modalBody.innerHTML = `
+                <img src="${thumbnail}" alt="${productData.name}" class="w-full h-64 object-cover rounded-lg mb-4">
+                <h2 class="text-2xl font-bold text-white mb-2">${productData.name}</h2>
+                <p class="text-gray-300 mb-2"><strong>Brand:</strong> ${productData.brand}</p>
+                <p class="text-gray-300 mb-2"><strong>Product Type:</strong> ${productData.productType}</p>
+                <p class="text-gray-300 mb-2"><strong>Hardware Material:</strong> ${productData.hardwareMaterial}</p>
+                <p class="text-gray-300 mb-2"><strong>Size:</strong> ${productData.size}</p>
+                <p class="text-xl font-semibold text-white mb-4"><strong>Estimated Value:</strong> ${productData.estimatedValue}</p>
+                <div class="flex space-x-4">
+                    <a href="${link}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">View Source</a>
+                    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">Add to Cart</button>
+                </div>
+            `;
+        modalOverlay.style.display = "flex";
+      }
+
+      function closeModal() {
+        modalOverlay.style.display = "none";
+      }
+      if (results.length > 0) {
+        results.forEach((element, index) => {
+          const productData = generateProductData(element.title);
+          const card = document.createElement("div");
+          card.className = "card";
+          card.setAttribute(
+            "data-aos",
+            index % 2 === 0 ? "fade-up" : "zoom-in"
+          );
+          card.setAttribute("data-aos-delay", `${index * 100}`);
+          card.innerHTML = `
                     <img src="${element.thumbnail}" alt="${productData.name}">
                     <div class="card-content">
-                        <a href="${element.link}" target="_blank">${productData.name}</a>
-                        <p class="text-white font-semibold">${productData.price} ${productData.discount ? `<span class="line-through text-gray-500">${productData.originalPrice}</span>` : ''}</p>
-                        <p class="stars">★${'★'.repeat(Math.floor(productData.rating))}${'☆'.repeat(5 - Math.floor(productData.rating))}</p>
+                        <a href="${element.link}" target="_blank">${
+            productData.name
+          }</a>
+                        <p class="text-white font-semibold">${
+                          productData.price
+                        } ${
+            productData.discount
+              ? `<span class="line-through text-gray-500">${productData.originalPrice}</span>`
+              : ""
+          }</p>
+                        <p class="stars">★${"★".repeat(
+                          Math.floor(productData.rating)
+                        )}${"☆".repeat(5 - Math.floor(productData.rating))}</p>
                         <p class="text-gray-400">${productData.stockStatus}</p>
-                        <button class="quick-view-btn bg-teal-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-teal-700" onclick='openModal(${JSON.stringify(productData)}, "${element.thumbnail}", "${element.link}")'>Quick View</button>
+                        <button class="quick-view-btn bg-teal-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-teal-700" onclick='openModal(${JSON.stringify(
+                          productData
+                        )}, "${element.thumbnail}", "${
+            element.link
+          }")'>Quick View</button>
                     </div>
                 `;
-                resultBox.appendChild(card);
-            });
-        } else {
-            noResults.classList.remove('hidden');
-        }
+          resultBox.appendChild(card);
+        });
+      } else {
+        noResults.classList.remove("hidden");
+      }
     </script>
-</body>
+  </body>
 </html>
