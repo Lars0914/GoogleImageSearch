@@ -248,7 +248,7 @@
                     const [minPrice, maxPrice] = priceRanges;
                     const hardwareMaterial = materials[Math.floor(Math.random() * materials.length)];
                     const size = sizes[Math.floor(Math.random() * sizes.length)];
-                    const estimatedValue = `US$${minPrice.toLocaleString('en-US')} - US$${maxPrice.toLocaleString('en-US')} (estimated value without considering the condition)`;
+                    const estimatedValue = `US$${minPrice.toLocaleString('en-US')} - US$${maxPrice.toLocaleString('en-US')}`;
 
                     resolve({
                         brand: detectedBrand,
@@ -264,10 +264,10 @@
                     resolve({
                         brand: 'Generic',
                         name: title.split(' ').slice(0, 3).join(' ') || 'Unknown Item',
-                        hardwareMaterial: 'Unknown',
+                        hardwareMaterial: 'Varies',
                         productType: 'Other',
                         size: 'Unknown',
-                        estimatedValue: 'US$50 - US$300 (estimated value without considering the condition)'
+                        estimatedValue: 'US$50 - US$300 '
                     });
                 };
             });
@@ -306,7 +306,7 @@
                     card.innerHTML = `
                         <img src="${element.thumbnail}" alt="${productData.name}">
                         <div class="card-content">
-                            <a href="${element.link}" target="_blank">${productData.name}</a>
+                            <a href="${element.link}" target="_blank" class="text-white">${productData.name}</a>
                             <p class="text-white font-semibold">${productData.estimatedValue}</p>
                             <button class="quick-view-btn bg-teal-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-teal-700" onclick="openModal(${JSON.stringify(productData)}, '${element.thumbnail}', '${element.link}')">Quick View</button>
                         </div>
