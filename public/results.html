@@ -389,7 +389,7 @@
 
       function openModal(index) {
         const result = results[index];
-        const productData = generateProductData(result.title);
+        const productData = analyzeImageAndGenerateData(result.thumbnail,result.title);
         const imageUrl = result.thumbnail || result.original_image;
 
         modalName.textContent = productData.name;
