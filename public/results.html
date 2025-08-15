@@ -10,19 +10,40 @@
         body {
             background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
             min-height: 100vh;
-            padding: 1rem;
+            padding: 4rem 1rem 1rem; /* Space for fixed button */
             font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+        .back-button {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4a5568;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            z-index: 1001;
+        }
+        .back-button:hover {
+            background-color: #2d3748;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+            gap: 1.5rem;
+            padding-top: 3rem; /* Offset for fixed button */
         }
         .result-card {
             background: rgba(45, 55, 72, 0.9);
             border-radius: 1rem;
             padding: 1.5rem;
-            max-width: 90%;
-            margin: 0 auto 1rem;
             transition: transform 0.3s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100%;
         }
         .result-card:hover {
             transform: translateY(-5px);
@@ -32,6 +53,7 @@
             height: auto;
             border-radius: 0.5rem;
             margin-bottom: 1rem;
+            object-fit: cover;
         }
         .modal {
             display: none;
@@ -51,7 +73,16 @@
             max-width: 90%;
             width: 300px;
             position: relative;
-            color: #fff; /* Reset text color to white */
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .modal-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
         }
         .close {
             position: absolute;
@@ -61,30 +92,12 @@
             color: #fff;
             cursor: pointer;
         }
-        .back-button {
-            background-color: #4a5568;
-            color: #fff;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            margin-top: 1rem;
-            display: inline-block;
-        }
-        .back-button:hover {
-            background-color: #2d3748;
-        }
         @media (min-width: 640px) {
-            .result-card {
-                max-width: 24rem;
-            }
             .modal-content {
                 width: 400px;
             }
         }
         @media (min-width: 1024px) {
-            .result-card {
-                max-width: 28rem;
-            }
             .modal-content {
                 width: 500px;
             }
@@ -93,7 +106,7 @@
 </head>
 <body>
     <a href="/index.html" class="back-button">Back to Home</a>
-    <div id="resultsContainer"></div>
+    <div id="resultsContainer" class="grid-container"></div>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
@@ -113,16 +126,16 @@
                     generic: [50, 300]
                 };
 
-                const titleParts = result.title.split(' ').slice(0, 3).join(' '); // Shorten name
+                const titleParts = result.title.split(' ').slice(0, 3).join(' ');
                 const detectedBrand = brands.luxury.find(b => titleParts.toLowerCase().includes(b.toLowerCase())) ||
                                     brands.midrange.find(b => titleParts.toLowerCase().includes(b.toLowerCase())) ||
                                     'Generic';
                 const priceRange = brandPriceRanges[detectedBrand.toLowerCase()] || brandPriceRanges.generic;
-                const hardwareMaterial = 'Leather, Metal'; // Placeholder
-                const productType = 'Handbag'; // Placeholder
-                const size = '30x20x10cm'; // Placeholder
+                const hardwareMaterial = 'Leather, Metal';
+                const productType = 'Handbag';
+                const size = '30x20x10cm';
                 const estimatedValue = `US$${priceRange[0].toLocaleString()}-US$${priceRange[1].toLocaleString()} (without regard to condition)`;
-                const imageUrl = result.thumbnail || result.original_image; // Use API image URL
+                const imageUrl = result.thumbnail || result.original_image;
 
                 const card = document.createElement('div');
                 card.className = 'result-card text-white mb-4';
@@ -146,6 +159,7 @@
                 <div class="modal-content">
                     <span class="close" onclick="closeModal()">&times;</span>
                     <h2 class="text-xl font-bold mb-2">Quick View</h2>
+                    <img id="modalImage" src="" alt="Modal Image" class="modal-image hidden">
                     <p><strong>Brand name and model:</strong> <span id="modalBrand"></span></p>
                     <p><strong>Product Type:</strong> <span id="modalType"></span></p>
                     <p><strong>Size:</strong> <span id="modalSize"></span></p>
@@ -170,14 +184,22 @@
                                     brands.midrange.find(b => titleParts.toLowerCase().includes(b.toLowerCase())) ||
                                     'Generic';
                 const priceRange = brandPriceRanges[detectedBrand.toLowerCase()] || brandPriceRanges.generic;
-                const productType = 'Handbag'; // Placeholder
-                const size = '30x20x10cm'; // Placeholder
-                const estimatedValue = `US$${priceRange[0].toLocaleString()}-US$${priceRange[1].toLocaleString()} (without regard to condition)`;
+                const productType = 'Handbag';
+                const size = '30x20x10cm';
+                const estimatedValue = `US$${priceRange[0].toLocaleString()}-US$${priceRange[1].toLocaleString()}`;
+                const imageUrl = result.thumbnail || result.original_image;
 
                 document.getElementById('modalBrand').textContent = `${detectedBrand} ${titleParts}`;
                 document.getElementById('modalType').textContent = productType;
                 document.getElementById('modalSize').textContent = size;
                 document.getElementById('modalValue').textContent = estimatedValue;
+                const modalImage = document.getElementById('modalImage');
+                if (imageUrl) {
+                    modalImage.src = imageUrl;
+                    modalImage.classList.remove('hidden');
+                } else {
+                    modalImage.classList.add('hidden');
+                }
                 document.getElementById('modal').style.display = 'flex';
             };
 
