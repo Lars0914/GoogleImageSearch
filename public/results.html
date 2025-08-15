@@ -170,54 +170,63 @@
             materials: ["Synthetics, Mesh", "Leather, Rubber", "Suede"],
             sizes: ["US 5-15", "EU 36-46"],
             priceRanges: [50, 200],
+
           },
           dress: {
             keywords: ["dress", "gown", "chanel dress"],
             materials: ["Tweed, Silk", "Chiffon, Pearls", "Satin"],
             sizes: ["S-XXL", "2-14"],
             priceRanges: [1000, 100000],
+
           },
           wallet: {
             keywords: ["wallet", "billfold", "louis vuitton wallet"],
             materials: ["Leather, Canvas", "Metal Hardware", "Suede Lining"],
             sizes: ["10x15cm", "12x10cm"],
             priceRanges: [285, 6885],
+
           },
           jewelry: {
             keywords: ["jewelry", "necklace", "bracelet", "ring", "earring"],
             materials: ["Gold, Diamonds", "Silver, Gemstones", "Platinum"],
             sizes: ["Adjustable", "18-20in", "7-9"],
             priceRanges: [1000, 50000],
+
           },
           belt: {
             keywords: ["belt", "waistbelt"],
             materials: ["Leather, Buckle", "Canvas, Brass"],
             sizes: ["30-40in", "80-100cm"],
             priceRanges: [50, 500],
+
           },
           hat: {
             keywords: ["hat", "cap", "beanie"],
             materials: ["Wool, Cotton", "Straw, Leather"],
             sizes: ["S-M", "One Size"],
             priceRanges: [20, 200],
+
           },
           eyewear: {
             keywords: ["eyewear", "sunglasses", "glasses"],
             materials: ["Acetate, Metal", "Plastic, Polarized Lens"],
             sizes: ["52-58mm lens"],
             priceRanges: [50, 500],
+
           },
           glove: {
             keywords: ["glove", "mittens"],
             materials: ["Leather, Wool", "Cotton, Rubber"],
             sizes: ["S-L"],
             priceRanges: [20, 100],
+
           },
           scarf: {
             keywords: ["scarf", "shawl"],
             materials: ["Silk, Wool", "Cashmere"],
             sizes: ["70x200cm", "180x30cm"],
             priceRanges: [50, 300],
+
           },
           cosmetic: {
             keywords: ["cosmetic", "makeup", "lipstick", "foundation"],
@@ -230,6 +239,7 @@
             materials: ["Wood, Metal", "Glass, Fabric"],
             sizes: ["Standard", "Queen"],
             priceRanges: [50, 1000],
+
           },
         };
 
@@ -293,7 +303,7 @@
             Math.floor(Math.random() * selectedCategory.sizes.length)
           ];
         const estimatedValue = `US$${priceLow} - US$${priceHigh} (estimated value without considering the condition)`;
-
+        const rating = Math.floor(Math.random() * 5) + 1
         return {
           brand: detectedBrand,
           name,
@@ -301,6 +311,7 @@
           productType,
           size,
           estimatedValue,
+          rating
         };
       }
       // Globally defined functions
@@ -342,7 +353,7 @@
             productData.name
           }</a>
                         <p class="text-white font-semibold">${
-                          productData.price
+                          productData.estimatedValue
                         }</p>
                         <p class="stars">★${"★".repeat(
                           Math.floor(productData.rating)
