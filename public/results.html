@@ -164,232 +164,181 @@
       function analyzeImageAndGenerateData(imageUrl, title) {
         // Simulate image analysis based on thumbnail URL and title (since direct image processing isn't possible here)
         // This is a placeholder; in a real scenario, I'd use xAI's image analysis capabilities
-        return new Promise((resolve) => {
-          const img = new Image();
-          img.crossOrigin = "Anonymous";
-          img.src = imageUrl;
 
-          img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
+        const hasStraps =
+          title.toLowerCase().includes("strap") ||
+          title.toLowerCase().includes("band");
+        const hasRoundShape =
+          canvas.width / canvas.height > 0.8 &&
+          canvas.width / canvas.height < 1.2;
 
-            // Simulate image content analysis (e.g., color, shape, text)
-            const imageData = ctx.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
-            const isShiny = imageData.data.some(
-              (value, index) => index % 4 === 0 && value > 200
-            ); // Rough check for bright/reflective surfaces
-            const hasStraps =
-              title.toLowerCase().includes("strap") ||
-              title.toLowerCase().includes("band");
-            const hasRoundShape =
-              canvas.width / canvas.height > 0.8 &&
-              canvas.width / canvas.height < 1.2;
+        let productType = "Other";
+        let materials = ["Unknown"];
+        let sizes = ["Unknown"];
+        let priceRanges = [50, 300];
 
-            let productType = "Other";
-            let materials = ["Unknown"];
-            let sizes = ["Unknown"];
-            let priceRanges = [50, 300];
+        // Infer product type based on image characteristics and title
+        if (title.toLowerCase().includes("watch")) {
+          productType = "Watch";
+          materials = ["Oystersteel", "18k Gold", "Stainless Steel"];
+          sizes = ["37mm", "40mm", "44mm"];
+          priceRanges = [5000, 75000];
+        } else if (
+          title.toLowerCase().includes("shoe") ||
+          title.toLowerCase().includes("sneaker") ||
+          title.toLowerCase().includes("boot")
+        ) {
+          productType = "Shoe";
+          materials = ["Synthetics, Mesh", "Leather, Rubber", "Suede"];
+          sizes = ["US 5-15", "EU 36-46", "UK 4-12"];
+          priceRanges = [50, 2000];
+        } else if (
+          title.toLowerCase().includes("dress") ||
+          title.toLowerCase().includes("gown")
+        ) {
+          productType = "Dress";
+          materials = ["Tweed, Silk", "Chiffon, Pearls", "Satin"];
+          sizes = ["S-XXL", "2-14", "36-44"];
+          priceRanges = [1000, 100000];
+        } else if (
+          title.toLowerCase().includes("wallet") ||
+          title.toLowerCase().includes("billfold")
+        ) {
+          productType = "Wallet";
+          materials = ["Leather, Canvas", "Metal Hardware", "Suede Lining"];
+          sizes = ["10x15cm", "12x10cm", "15x8cm"];
+          priceRanges = [285, 6885];
+        } else if (
+          title.toLowerCase().includes("jewelry") ||
+          title.toLowerCase().includes("necklace") ||
+          title.toLowerCase().includes("bracelet") ||
+          title.toLowerCase().includes("ring")
+        ) {
+          productType = "Jewelry";
+          materials = ["Gold, Diamonds", "Silver, Gemstones", "Platinum"];
+          sizes = ["Adjustable", "18-20in", "7-9"];
+          priceRanges = [1000, 50000];
+        } else if (
+          title.toLowerCase().includes("handbag") ||
+          title.toLowerCase().includes("purse") ||
+          title.toLowerCase().includes("tote") ||
+          title.toLowerCase().includes("clutch") ||
+          hasStraps
+        ) {
+          productType = "Handbag";
+          materials = [
+            "Leather, Metal",
+            "Canvas, Gold Hardware",
+            "Patent Leather, Ruthenium",
+          ];
+          sizes = ["25x15x10cm", "30x20x10cm", "35x25x15cm"];
+          priceRanges = [500, 5000];
+        } else if (
+          title.toLowerCase().includes("belt") ||
+          title.toLowerCase().includes("waistbelt")
+        ) {
+          productType = "Belt";
+          materials = ["Leather, Buckle", "Canvas, Brass"];
+          sizes = ["30-40in", "80-100cm"];
+          priceRanges = [50, 500];
+        } else if (
+          title.toLowerCase().includes("hat") ||
+          title.toLowerCase().includes("cap") ||
+          title.toLowerCase().includes("beanie")
+        ) {
+          productType = "Hat";
+          materials = ["Wool, Cotton", "Straw, Leather"];
+          sizes = ["S-M", "One Size"];
+          priceRanges = [20, 200];
+        } else if (
+          title.toLowerCase().includes("eyewear") ||
+          title.toLowerCase().includes("sunglasses") ||
+          title.toLowerCase().includes("glasses")
+        ) {
+          productType = "Eyewear";
+          materials = ["Acetate, Metal", "Plastic, Polarized Lens"];
+          sizes = ["52-58mm lens"];
+          priceRanges = [50, 500];
+        } else if (
+          title.toLowerCase().includes("glove") ||
+          title.toLowerCase().includes("mittens")
+        ) {
+          productType = "Glove";
+          materials = ["Leather, Wool", "Cotton, Rubber"];
+          sizes = ["S-L"];
+          priceRanges = [20, 100];
+        } else if (
+          title.toLowerCase().includes("scarf") ||
+          title.toLowerCase().includes("shawl")
+        ) {
+          productType = "Scarf";
+          materials = ["Silk, Wool", "Cashmere"];
+          sizes = ["70x200cm", "180x30cm"];
+          priceRanges = [50, 300];
+        } else if (
+          title.toLowerCase().includes("cosmetic") ||
+          title.toLowerCase().includes("makeup") ||
+          title.toLowerCase().includes("lipstick") ||
+          title.toLowerCase().includes("foundation")
+        ) {
+          productType = "Cosmetic";
+          materials = ["Vegan Ingredients", "Organic Compounds"];
+          sizes = ["30ml", "50g"];
+          priceRanges = [10, 100];
+        } else if (
+          title.toLowerCase().includes("chair") ||
+          title.toLowerCase().includes("table") ||
+          title.toLowerCase().includes("lamp") ||
+          title.toLowerCase().includes("sofa") ||
+          title.toLowerCase().includes("bed")
+        ) {
+          productType = "Household";
+          materials = ["Wood, Metal", "Glass, Fabric"];
+          sizes = ["Standard", "Queen", "120x60cm"];
+          priceRanges = [50, 1000];
+        } else {
+          productType = "Other";
+          materials = ["Mixed Materials"];
+          sizes = ["Varies"];
+          priceRanges = [10, 1000];
+        }
 
-            // Infer product type based on image characteristics and title
-            if (
-              title.toLowerCase().includes("watch") ||
-              (hasRoundShape && isShiny)
-            ) {
-              productType = "Watch";
-              materials = ["Oystersteel", "18k Gold", "Stainless Steel"];
-              sizes = ["37mm", "40mm", "44mm"];
-              priceRanges = [5000, 75000];
-            } else if (
-              title.toLowerCase().includes("shoe") ||
-              title.toLowerCase().includes("sneaker") ||
-              title.toLowerCase().includes("boot")
-            ) {
-              productType = "Shoe";
-              materials = ["Synthetics, Mesh", "Leather, Rubber", "Suede"];
-              sizes = ["US 5-15", "EU 36-46", "UK 4-12"];
-              priceRanges = [50, 2000];
-            } else if (
-              title.toLowerCase().includes("dress") ||
-              title.toLowerCase().includes("gown")
-            ) {
-              productType = "Dress";
-              materials = ["Tweed, Silk", "Chiffon, Pearls", "Satin"];
-              sizes = ["S-XXL", "2-14", "36-44"];
-              priceRanges = [1000, 100000];
-            } else if (
-              title.toLowerCase().includes("wallet") ||
-              title.toLowerCase().includes("billfold")
-            ) {
-              productType = "Wallet";
-              materials = ["Leather, Canvas", "Metal Hardware", "Suede Lining"];
-              sizes = ["10x15cm", "12x10cm", "15x8cm"];
-              priceRanges = [285, 6885];
-            } else if (
-              title.toLowerCase().includes("jewelry") ||
-              title.toLowerCase().includes("necklace") ||
-              title.toLowerCase().includes("bracelet") ||
-              title.toLowerCase().includes("ring")
-            ) {
-              productType = "Jewelry";
-              materials = ["Gold, Diamonds", "Silver, Gemstones", "Platinum"];
-              sizes = ["Adjustable", "18-20in", "7-9"];
-              priceRanges = [1000, 50000];
-            } else if (
-              title.toLowerCase().includes("handbag") ||
-              title.toLowerCase().includes("purse") ||
-              title.toLowerCase().includes("tote") ||
-              title.toLowerCase().includes("clutch") ||
-              hasStraps
-            ) {
-              productType = "Handbag";
-              materials = [
-                "Leather, Metal",
-                "Canvas, Gold Hardware",
-                "Patent Leather, Ruthenium",
-              ];
-              sizes = ["25x15x10cm", "30x20x10cm", "35x25x15cm"];
-              priceRanges = [500, 5000];
-            } else if (
-              title.toLowerCase().includes("belt") ||
-              title.toLowerCase().includes("waistbelt")
-            ) {
-              productType = "Belt";
-              materials = ["Leather, Buckle", "Canvas, Brass"];
-              sizes = ["30-40in", "80-100cm"];
-              priceRanges = [50, 500];
-            } else if (
-              title.toLowerCase().includes("hat") ||
-              title.toLowerCase().includes("cap") ||
-              title.toLowerCase().includes("beanie")
-            ) {
-              productType = "Hat";
-              materials = ["Wool, Cotton", "Straw, Leather"];
-              sizes = ["S-M", "One Size"];
-              priceRanges = [20, 200];
-            } else if (
-              title.toLowerCase().includes("eyewear") ||
-              title.toLowerCase().includes("sunglasses") ||
-              title.toLowerCase().includes("glasses")
-            ) {
-              productType = "Eyewear";
-              materials = ["Acetate, Metal", "Plastic, Polarized Lens"];
-              sizes = ["52-58mm lens"];
-              priceRanges = [50, 500];
-            } else if (
-              title.toLowerCase().includes("glove") ||
-              title.toLowerCase().includes("mittens")
-            ) {
-              productType = "Glove";
-              materials = ["Leather, Wool", "Cotton, Rubber"];
-              sizes = ["S-L"];
-              priceRanges = [20, 100];
-            } else if (
-              title.toLowerCase().includes("scarf") ||
-              title.toLowerCase().includes("shawl")
-            ) {
-              productType = "Scarf";
-              materials = ["Silk, Wool", "Cashmere"];
-              sizes = ["70x200cm", "180x30cm"];
-              priceRanges = [50, 300];
-            } else if (
-              title.toLowerCase().includes("cosmetic") ||
-              title.toLowerCase().includes("makeup") ||
-              title.toLowerCase().includes("lipstick") ||
-              title.toLowerCase().includes("foundation")
-            ) {
-              productType = "Cosmetic";
-              materials = ["Vegan Ingredients", "Organic Compounds"];
-              sizes = ["30ml", "50g"];
-              priceRanges = [10, 100];
-            } else if (
-              title.toLowerCase().includes("chair") ||
-              title.toLowerCase().includes("table") ||
-              title.toLowerCase().includes("lamp") ||
-              title.toLowerCase().includes("sofa") ||
-              title.toLowerCase().includes("bed")
-            ) {
-              productType = "Household";
-              materials = ["Wood, Metal", "Glass, Fabric"];
-              sizes = ["Standard", "Queen", "120x60cm"];
-              priceRanges = [50, 1000];
-            } else {
-              // Fallback for unclassified items
-              productType = "Other";
-              materials = ["Mixed Materials"];
-              sizes = ["Varies"];
-              priceRanges = [10, 1000];
-            }
+        const brands = [
+          "Gucci",
+          "Prada",
+          "Louis Vuitton",
+          "Chanel",
+          "Hermès",
+          "Dior",
+          "Coach",
+          "Michael Kors",
+          "Kate Spade",
+          "Tory Burch",
+          "Rolex",
+          "Cartier",
+          "Nike",
+          "Adidas",
+          "Generic",
+        ];
+        const detectedBrand =
+          brands.find((b) => title.toLowerCase().includes(b.toLowerCase())) ||
+          "Generic";
 
-            const brands = [
-              "Gucci",
-              "Prada",
-              "Louis Vuitton",
-              "Chanel",
-              "Hermès",
-              "Dior",
-              "Coach",
-              "Michael Kors",
-              "Kate Spade",
-              "Tory Burch",
-              "Rolex",
-              "Cartier",
-              "Nike",
-              "Adidas",
-              "Generic",
-            ];
-            const detectedBrand =
-              brands.find((b) =>
-                title.toLowerCase().includes(b.toLowerCase())
-              ) || "Generic";
-
-            const [minPrice, maxPrice] = priceRanges;
-            const hardwareMaterial =
-              materials[Math.floor(Math.random() * materials.length)];
-            const size = sizes[Math.floor(Math.random() * sizes.length)];
-            const estimatedValue = `US$${minPrice.toLocaleString(
-              "en-US"
-            )} - US$${maxPrice.toLocaleString("en-US")}`;
-
-            resolve({
-              brand: detectedBrand,
-              name:
-                title
-                  .split(" ")
-                  .slice(0, 3)
-                  .join(" ")
-                  .replace(detectedBrand, "")
-                  .trim() || `${detectedBrand} ${productType}`,
-              hardwareMaterial,
-              productType,
-              size,
-              estimatedValue,
-            });
-          };
-
-          img.onerror = () => {
-            resolve({
-              brand: "Generic",
-              name: title.split(" ").slice(0, 3).join(" ") || "Unknown Item",
-              hardwareMaterial: "Varies",
-              productType: "Other",
-              size: "Unknown",
-              estimatedValue: "US$50 - US$300 ",
-            });
-          };
-        });
+        const [minPrice, maxPrice] = priceRanges;
+        const hardwareMaterial =
+          materials[Math.floor(Math.random() * materials.length)];
+        const size = sizes[Math.floor(Math.random() * sizes.length)];
+        const estimatedValue = `US$${minPrice.toLocaleString(
+          "en-US"
+        )} - US$${maxPrice.toLocaleString("en-US")}`;
       }
 
       function openModal(index) {
         const result = results[index];
-        const productData = analyzeImageAndGenerateData(result.thumbnail,result.title);
+        const productData = analyzeImageAndGenerateData(
+          result.thumbnail,
+          result.title
+        );
         const imageUrl = result.thumbnail || result.original_image;
 
         modalName.textContent = productData.name;
@@ -426,7 +375,7 @@
             result.title
           );
           console.log(productData);
-          
+
           const card = document.createElement("div");
           card.className = "result-card";
           card.setAttribute(
