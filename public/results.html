@@ -343,15 +343,11 @@
           }</a>
                         <p class="text-white font-semibold">${
                           productData.price
-                        } ${
-            productData.discount
-              ? `<span class="line-through text-gray-500">${productData.originalPrice}</span>`
-              : ""
-          }</p>
+                        }</p>
                         <p class="stars">★${"★".repeat(
                           Math.floor(productData.rating)
-                        )}${"☆".repeat(5 - Math.floor(productData.rating))}</p>
-                        <p class="text-gray-400">${productData.stockStatus}</p>
+                        )}${"☆".repeat(Math.floor(productData.rating))}</p>
+                        <p class="text-gray-400">${productData.brand}</p>
                         <button class="quick-view-btn bg-teal-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-teal-700" onclick='openModal(${JSON.stringify(
                           productData
                         )}, "${element.thumbnail}", "${
